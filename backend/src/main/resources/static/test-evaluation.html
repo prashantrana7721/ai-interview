@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Interview Evaluation</title>
+</head>
+<body>
+<h2>Interview Answer Evaluation</h2>
+<form action="http://localhost:8080/api/evaluate" method="post">
+  <label>Question:</label><br>
+  <input type="text" name="question" value="What is polymorphism in Java?" size="60"><br><br>
+
+  <label>Candidate Answer:</label><br>
+  <textarea name="candidateAnswer" rows="4" cols="60">It means method overriding and overloading.</textarea><br><br>
+
+  <input type="submit" value="Evaluate Answer">
+</form>
+</body>
+</html>

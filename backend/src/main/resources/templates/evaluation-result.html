@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Evaluation Result</title>
+</head>
+<body>
+<h1>Interview Evaluation Result</h1>
+<p><strong>Question:</strong> <span th:text="${result.question}"></span></p>
+<p><strong>Candidate Answer:</strong> <span th:text="${result.candidateAnswer}"></span></p>
+<p><strong>Ideal Answer:</strong> <span th:text="${result.idealAnswer}"></span></p>
+<p><strong>Similarity Score:</strong> <span th:text="${result.keywordMatchScore}"></span></p>
+<p><strong>Feedback:</strong> <span th:text="${result.feedback}"></span></p>
+</body>
+</html>

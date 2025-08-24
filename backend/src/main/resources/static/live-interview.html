@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Live Interview Evaluation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            padding: 40px;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(5px);
+        }
+        h1 {
+            text-align: center;
+            color: #ffe082;
+        }
+        label {
+            display: block;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            resize: vertical;
+        }
+        input[type="file"] {
+            margin-top: 10px;
+        }
+        .controls button {
+            margin: 15px 10px 0 0;
+            padding: 12px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 10px;
+            background-color: #ffd54f;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .controls button:hover {
+            background-color: #ffb300;
+        }
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+        .result strong {
+            color: #80d8ff;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Live Interview Evaluation</h1>
+
+    <label for="question">Interview Question:</label>
+    <textarea id="question" placeholder="Enter the interview question..."></textarea>
+
+    <label for="candidateAnswer">Candidate Answer:</label>
+    <textarea id="candidateAnswer" placeholder="Paste candidate's response here or use mic..."></textarea>
+
+    <label>Upload Audio (MP3/WAV):</label>
+    <input type="file" id="audio">
+
+    <div class="controls">
+        <button onclick="startRecording()">Start Recording</button>
+        <button onclick="stopRecording()">Stop & Transcribe</button>
+        <button onclick="evaluateAnswer()">Evaluate Answer</button>
+    </div>
+
+    <div class="result" id="result" style="display:none;">
+        <p><strong>Ideal Answer:</strong> <span id="idealAnswer"></span></p>
+        <p><strong>Match Score:</strong> <span id="matchScore"></span></p>
+        <p><strong>Feedback:</strong> <span id="feedback"></span></p>
+    </div>
+</div>
+
+<script>
+    let mediaRecorder;
+    let audioChunks = [];
+
+    function startRecording() {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = async () => {
+                    const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const formData = new FormData();
+                    formData.append("file", blob, "recorded_audio.webm");
+                    const res = await fetch("/api/audio/transcribe", {
+                        method: "POST",
+                        body: formData
+                    });
+                    const text = await res.text();
+                    document.getElementById("candidateAnswer").value = text;
+                };
+                audioChunks = [];
+                mediaRecorder.start();
+                alert("🎙 Recording started...");
+            })
+            .catch(err => alert("Microphone error: " + err));
+    }
+
+    function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
+            alert("🛑 Recording stopped. Transcribing...");
+        }
+    }
+
+    async function evaluateAnswer() {
+        const question = document.getElementById('question').value.trim();
+        const candidateAnswer = document.getElementById('candidateAnswer').value.trim();
+
+        if (!question || !candidateAnswer) {
+            alert("Please fill out both fields.");
+            return;
+        }
+
+        const response = await fetch('/api/evaluate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question, candidateAnswer })
+        });
+
+        const data = await response.json();
+        document.getElementById('idealAnswer').textContent = data.idealAnswer;
+        document.getElementById('matchScore').textContent = (data.keywordMatchScore * 100).toFixed(2) + '%';
+        document.getElementById('feedback').textContent = data.feedback;
+        document.getElementById('result').style.display = 'block';
+    }
+</script>
+</body>
+</html>
