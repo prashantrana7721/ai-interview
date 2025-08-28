@@ -1,4 +1,4 @@
-# AInterview – AI-Powered Interview Evaluator
+# AI-Interview – AI-Powered Interview Evaluator
 
 AInterview Is A Real-Time AI-Powered Interview Evaluation Platform Built Using Spring Boot , Docker , And FastAPI Microservices . It Provides Semantic Scoring , Sentiment Detection And Transcribed Feedback To Help Recruiters Evaluate Candidates Fairly And Efficiently Via A Clean HTML Interface .
 
